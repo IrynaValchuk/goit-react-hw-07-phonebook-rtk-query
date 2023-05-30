@@ -1,14 +1,24 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { addContact } from 'redux/operations';
-import { selectContacts, selectError } from 'redux/selectors';
+import {
+  useCreateContactMutation,
+  useGetContactsQuery,
+} from 'redux/contactsAPI';
 
 import css from 'components/ContactForm/ContactForm.module.css';
 
 export const ContactForm = () => {
-  const dispatch = useDispatch();
-  const contacts = useSelector(selectContacts);
-  const error = useSelector(selectError);
+  const { data: contacts } = useGetContactsQuery();
+  const [createContact, { isSuccess, isError }] = useCreateContactMutation();
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success('Contact created successfully.');
+    }
+    if (isError) {
+      toast.success('Something went wrong, please reload the page.');
+    }
+  }, [isSuccess, isError]);
 
   const handleSubmitForm = evt => {
     evt.preventDefault();
@@ -31,7 +41,7 @@ export const ContactForm = () => {
       form.reset();
       return;
     } else {
-      dispatch(addContact({ name, phone }));
+      createContact({ name, phone });
       form.reset();
     }
   };
@@ -62,7 +72,7 @@ export const ContactForm = () => {
           className={css.input}
         />
       </label>
-      <button type="submit" className={css.btn} disabled={error}>
+      <button type="submit" className={css.btn}>
         Add contact
       </button>
     </form>
